@@ -1,0 +1,57 @@
+header {
+  position: relative;
+}
+
+header>vscode-button {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  margin-top: -14px;
+}
+
+header>h1>vscode-badge {
+  vertical-align: middle;
+  margin-right: 10px;
+  height: 22px;
+}
+
+header>h2>vscode-tag {
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+header>h1 {
+  margin: 7px 0px 7px 0px;
+}
+
+header>h2 {
+  margin: 5px 0px 10px 0px;
+}
+
+.email-content {
+  color: var(--vscode-inputOption-activeForeground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+}
+
+.email-content>.greyed {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+a {
+  text-decoration: none;
+}
+
+vscode-link {
+  font-size: inherit;
+}
+
+h5 {
+  color: var(--vscode-input-placeholderForeground);
+  margin: 2px;
+}
+
+.indented-reply {
+  padding-left: 25px;
+  border-left: 3px solid var(--divider-background);
+}
