@@ -1,4 +1,6 @@
 # VSCode - Patchwork
+
+![Screenshot](/screenshot.png?raw=true "Screenshot")
  
 This extension integrates VSCode with [Patchwork](http://jk.ozlabs.org/projects/patchwork/). It supports:
 
