@@ -1,7 +1,10 @@
-import { Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
+import { forest, ForestInstance } from "4rest";
+import { CommentThreadCollapsibleState, Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { PatchesService, SeriesService, Filter } from "../rest-api/Endpoints";
 import { Patch, Series } from "../rest-api/Types";
 import { gravatarUri } from "../utilities/gravatarUri";
+import * as vscode from "vscode";
+import { userAgent } from "../utilities/userAgent";
 
 type PossibleNode = SeriesNode | PatchNode | FetchMoreNode;
 type TreeDataOnChangeEvent = PossibleNode | undefined | null | void;
@@ -11,25 +14,32 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
   readonly onDidChangeTreeData: Event<TreeDataOnChangeEvent> = this._onDidChangeTreeData.event;
 
   children: PossibleNode[];
+  forestInstance: ForestInstance;
   seriesService: SeriesService;
   currentFilter: Filter;
   currentPage: number;
 
-  constructor(currentFilter: Filter) {
+  constructor(currentFilter: Filter, context: vscode.ExtensionContext) {
+    this.forestInstance = forest.create({
+      axiosSettings: {
+        baseURL: "https://patchwork.kernel.org/api/",
+        headers: { 'User-Agent': userAgent(context) },
+      },
+    });
     this.children = [];
-    this.seriesService = new SeriesService();
+    this.seriesService = new SeriesService(this.forestInstance);
     this.currentFilter = currentFilter;
     this.currentPage = 1;
   }
 
   async nodeForSeries(s: Series): Promise<PossibleNode> {
-    const patchesService = new PatchesService();
+    const patchesService = new PatchesService(this.forestInstance);
     if (!s.cover_letter && s.patches.length === 1) {
       const patchReply = await patchesService.getById(s.patches[0].id);
       const patch = patchReply.data;
       return new PatchNode(patch);
     } else {
-      return new SeriesNode(s);
+      return new SeriesNode(s, this.forestInstance);
     }
   }
 
@@ -42,7 +52,7 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
     const series = await this.seriesService.getByPage(1, this.currentFilter);
     const seriesData = series.data;
 
-    this.children = await Promise.all(seriesData.map(this.nodeForSeries));
+    this.children = await Promise.all(seriesData.map((s: Series) => { return this.nodeForSeries(s); }));
 
     const linkHeader = series.headers["link"];
     if (linkHeader && linkHeader.indexOf('rel="next"')) {
@@ -84,13 +94,15 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
 
 class SeriesNode extends TreeItem {
   private patchesIds: number[];
+  private forestInstance: ForestInstance;
 
-  constructor(series: Series) {
+  constructor(series: Series, forestInstance: ForestInstance) {
     super(series.name);
     this.id = series.id.toString();
     this.iconPath = gravatarUri(series.submitter.email);
     this.patchesIds = series.patches.map((p) => p.id);
     this.collapsibleState = TreeItemCollapsibleState.Collapsed;
+    this.forestInstance = forestInstance;
     this.command = {
       title: "Show series",
       command: "patchwork.showPanel",
@@ -99,7 +111,7 @@ class SeriesNode extends TreeItem {
   }
 
   async getChildren(): Promise<PatchNode[]> {
-    const patchesService = new PatchesService();
+    const patchesService = new PatchesService(this.forestInstance);
     return Promise.all(
       this.patchesIds.map(async (id) => {
         const patchReply = await patchesService.getById(id);

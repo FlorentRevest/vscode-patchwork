@@ -35,7 +35,7 @@ export async function activate(context: ExtensionContext) {
   };
 
   // Series tree view
-  const seriesDataProvider = new SeriesDataProvider(currentFilter);
+  const seriesDataProvider = new SeriesDataProvider(currentFilter, context);
   seriesDataProvider.refresh(currentFilter);
   window.createTreeView("patchwork.series", {
     treeDataProvider: seriesDataProvider,
@@ -52,7 +52,7 @@ export async function activate(context: ExtensionContext) {
   });
 
   // Fetch once the list of projects and persons
-  const databaseDom = await fetchAPIHTMLPage();
+  const databaseDom = await fetchAPIHTMLPage(context);
   const projectsMap = getProjects(databaseDom);
   const personsMap = getPersons(databaseDom);
 
@@ -69,7 +69,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(
     commands.registerCommand("patchwork.showPanel", async (payload: Series | Patch) => {
       if (!panel) {
-        panel = getNewPanel(context.extensionUri, payload);
+        panel = getNewPanel(context.extensionUri, payload, context);
         panel.onDidDispose(
           () => {
             panel = undefined;

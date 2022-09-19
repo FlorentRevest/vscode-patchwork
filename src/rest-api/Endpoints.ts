@@ -1,4 +1,4 @@
-import { forest, ForestInstance, ForestService } from "4rest";
+import { ForestInstance, ForestService } from "4rest";
 import { Patch, Project, Series } from "./Types";
 
 export interface Filter {
@@ -13,15 +13,8 @@ function stringValueOrUndefined(str: string) {
   return str === "" ? undefined : str;
 }
 
-// Wrappers around Patchwork REST APIs, using 4rest
-const forestInstance: ForestInstance = forest.create({
-  axiosSettings: {
-    baseURL: "https://patchwork.kernel.org/api/",
-  },
-});
-
 export class SeriesService extends ForestService<Series> {
-  constructor() {
+  constructor(forestInstance: ForestInstance) {
     super("series", forestInstance);
   }
   public getByPage = (page: number, f: Filter) =>
@@ -41,13 +34,13 @@ export class SeriesService extends ForestService<Series> {
 }
 
 export class PatchesService extends ForestService<Patch> {
-  constructor() {
+  constructor(forestInstance: ForestInstance) {
     super("patches", forestInstance);
   }
 }
 
 export class ProjectsService extends ForestService<Project> {
-  constructor() {
+  constructor(forestInstance: ForestInstance) {
     super("projects", forestInstance);
   }
 }

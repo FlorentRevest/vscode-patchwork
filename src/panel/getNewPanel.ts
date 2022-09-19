@@ -1,10 +1,11 @@
 import { commands, Uri, ViewColumn, WebviewPanel, Webview, window } from "vscode";
 import { Patch, Series } from "../rest-api/Types";
 import { getUri } from "../utilities/getUri";
+import { userAgent } from "../utilities/userAgent";
 import axios from "axios";
 import * as vscode from "vscode";
 
-export function getNewPanel(extensionUri: Uri, payload: Patch | Series): WebviewPanel {
+export function getNewPanel(extensionUri: Uri, payload: Patch | Series, context: vscode.ExtensionContext): WebviewPanel {
   let panel = window.createWebviewPanel("patchworkDetailView", "", ViewColumn.One, {
     enableScripts: true,
   });
@@ -22,7 +23,7 @@ export function getNewPanel(extensionUri: Uri, payload: Patch | Series): Webview
         break;
       case "getCoverLetter":
         const cover_letter = await axios.get<Patch>(message.url, {
-          headers: { Accept: "application/json" },
+          headers: { Accept: "application/json", 'User-Agent': userAgent(context) },
         });
         panel.webview.postMessage({
           command: "setCoverLetter",
@@ -31,7 +32,7 @@ export function getNewPanel(extensionUri: Uri, payload: Patch | Series): Webview
         break;
       case "getComments":
         const comments = await axios.get<Patch[]>(message.url, {
-          headers: { Accept: "application/json" },
+          headers: { Accept: "application/json", 'User-Agent': userAgent(context) },
         });
         panel.webview.postMessage({
           command: "setComments",
