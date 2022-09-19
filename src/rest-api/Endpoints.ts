@@ -38,9 +38,3 @@ export class PatchesService extends ForestService<Patch> {
     super("patches", forestInstance);
   }
 }
-
-export class ProjectsService extends ForestService<Project> {
-  constructor(forestInstance: ForestInstance) {
-    super("projects", forestInstance);
-  }
-}
