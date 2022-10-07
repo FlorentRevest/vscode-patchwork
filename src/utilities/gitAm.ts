@@ -26,7 +26,7 @@ export function gitAm(mboxUri: string) {
     // Start git am
     let child = child_process.execFile(
       "/usr/bin/git",
-      ["am"],
+      ["am", "-3"],
       { cwd: workspaceFolders[0].uri.path },
       (error, _stdout, stderr) => {
         // Notify the user of completion
