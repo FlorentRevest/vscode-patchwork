@@ -1,5 +1,4 @@
-import * as child_process from "child_process";
-import * as stream from "stream";
+import * as fs from "fs";
 import axios from "axios";
 import * as vscode from "vscode";
 
@@ -16,34 +15,13 @@ export function gitAm(mboxUri: string) {
       return;
     }
 
-    // Calculate the cwd (current working directory) for git am
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders || !workspaceFolders.length) {
-      vscode.window.showErrorMessage("No root workspace");
-      return;
-    }
+    // Write to disk
+    let out = "/tmp/vscode-patchwork-mbox-" + Math.random().toString(36).slice(-5);
+    fs.writeFileSync(out, response.data, {encoding: null});
 
-    // Start git am
-    let child = child_process.execFile(
-      "/usr/bin/git",
-      ["am", "-3"],
-      { cwd: workspaceFolders[0].uri.path },
-      (error, _stdout, stderr) => {
-        // Notify the user of completion
-        if (error) {
-          vscode.window.showErrorMessage(`Failed to apply! ${stderr}`);
-        } else {
-          vscode.window.showInformationMessage("Applied successfully!");
-        }
-      }
-    );
-
-    // Pipe the mbox into git's stdin
-    if (child.stdin) {
-      var stdinStream = new stream.Readable();
-      stdinStream.push(response.data);
-      stdinStream.push(null);
-      stdinStream.pipe(child.stdin);
-    }
+    // Spawn git am
+    let terminal = vscode.window.createTerminal("git am");
+    terminal.show();
+    terminal.sendText("git am -3 " + out, true);
   });
 }
