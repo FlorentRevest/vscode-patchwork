@@ -1,4 +1,4 @@
-import { VSCodeDivider, VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import React from "react";
 import Linkify from "react-linkify";
 import { Patch } from "../../src/rest-api/Types";
@@ -49,7 +49,6 @@ export const EmailView = ({ email, isReply }: { email: Patch; isReply: boolean }
           &nbsp;&nbsp;Reply
         </VSCodeButton>
       </a>
-      <VSCodeDivider />
     </div>
   );
 };

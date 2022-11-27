@@ -95,7 +95,6 @@ export const SeriesView = ({ series }: { series: Series }) => {
     return (
       <div>
         <EmailView email={coverLetter} isReply={false} />
-        <VSCodeDivider />
         <RepliesView url={coverLetter.comments} />
       </div>
     );

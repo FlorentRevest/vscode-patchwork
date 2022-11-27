@@ -1,4 +1,4 @@
-import { VSCodeLink, VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeLink, VSCodeProgressRing, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
 import React, { useState, useCallback, useEffect } from "react";
 import { Patch } from "../../src/rest-api/Types";
 import { EmailView } from "./EmailView";
@@ -39,20 +39,23 @@ function ReplyView({ node, isDirectReply }: { node: ReplyNode; isDirectReply: bo
   });
 
   return (
-    <div className={isDirectReply ? "" : "indented-reply"}>
-      <h3>
-        <VSCodeLink
-          title={node.reply.submitter.email}
-          href={"mailto:" + node.reply.submitter.email}>
-          {node.reply.submitter.name}
-        </VSCodeLink>
-        {" replied " + dateFromNow(new Date(node.reply.date))}
-      </h3>
+    <>
+      <VSCodeDivider />
+      <div className={isDirectReply ? "" : "indented-reply"}>
+        <h3>
+          <VSCodeLink
+            title={node.reply.submitter.email}
+            href={"mailto:" + node.reply.submitter.email}>
+            {node.reply.submitter.name}
+          </VSCodeLink>
+          {" replied " + dateFromNow(new Date(node.reply.date))}
+        </h3>
 
-      <EmailView email={node.reply} isReply={true} />
+        <EmailView email={node.reply} isReply={true} />
 
-      {replies}
-    </div>
+        {replies}
+      </div>
+    </>
   );
 }
 

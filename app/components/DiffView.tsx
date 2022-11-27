@@ -18,6 +18,7 @@ export const FileDiffView = ({ file }: { file: File }) => {
   // Lay out all modified hunks
   return (
     <div>
+      <VSCodeDivider/>
       <h2>
         {file.oldPath !== file.newPath ? (
           <>
@@ -33,7 +34,6 @@ export const FileDiffView = ({ file }: { file: File }) => {
       {file.hunks.map((hunk: Hunk) => (
         <HunkView key={hunk.content} hunk={hunk} file={file} />
       ))}
-      <VSCodeDivider />
     </div>
   );
 };
