@@ -42,13 +42,6 @@ export const EmailView = ({ email, isReply }: { email: Patch; isReply: boolean }
           &nbsp;&nbsp;Open archive
         </VSCodeButton>
       </a>
-      &nbsp;
-      <a href={"mailto:" + email.submitter.email + "?In-Reply-To=" + email.msgid}>
-        <VSCodeButton appearance="secondary" title="Reply">
-          <span className="codicon codicon-reply" />
-          &nbsp;&nbsp;Reply
-        </VSCodeButton>
-      </a>
     </div>
   );
 };
