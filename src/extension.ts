@@ -10,6 +10,17 @@ import { fetchAPIHTMLPage, getPersons, getProjects } from "./utilities/fetchAPIH
 import { SavedFiltersDataProvider } from "./tree-views/SavedFiltersDataProvider";
 
 export async function activate(context: ExtensionContext) {
+  // Retrieve the list of projects and persons from cache if available
+  let projectsMap: Record<string, string> = context.workspaceState.get("patchwork:projects", {});
+  let personsMap: Record<string, string> = context.workspaceState.get("patchwork:persons", {});
+  // Asynchronously fetch an updated version
+  fetchAPIHTMLPage(context).then((databaseDom: any) => {
+    projectsMap = getProjects(databaseDom);
+    context.workspaceState.update("patchwork:projects", projectsMap);
+    personsMap = getPersons(databaseDom);
+    context.workspaceState.update("patchwork:persons", personsMap);
+  });
+
   // Remember the filter from one session to the next
   const emptyFilter = {
     query: "",
@@ -30,7 +41,7 @@ export async function activate(context: ExtensionContext) {
       currentFilter = f;
       context.workspaceState.update("patchwork:currentFilter", currentFilter);
       seriesDataProvider.refresh(f);
-      filterProvider.setFilter(f);
+      vscode.commands.executeCommand("patchwork.refreshFilterContent");
     }
   };
 
@@ -51,13 +62,8 @@ export async function activate(context: ExtensionContext) {
     canSelectMany: false,
   });
 
-  // Fetch once the list of projects and persons
-  const databaseDom = await fetchAPIHTMLPage(context);
-  const projectsMap = getProjects(databaseDom);
-  const personsMap = getPersons(databaseDom);
-
   // Filter view
-  const filterProvider = new FilterViewProvider(context.extensionUri, currentFilter, projectsMap, personsMap);
+  const filterProvider = new FilterViewProvider(context.extensionUri);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider("patchwork.filter", filterProvider)
   );
@@ -122,6 +128,70 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(
     commands.registerCommand("patchwork.changeFilter", (f: Filter) => {
       changeFilter(f);
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("patchwork.changeSearch", (q: string) => {
+      let newFilter = { ...currentFilter };
+      newFilter.query = q;
+      changeFilter(newFilter);
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("patchwork.changeProject", () => {
+      const projects = [{ label: "All projects", id: "" }];
+      for (const id in projectsMap) {
+        projects.push({ label: projectsMap[id], id: id });
+      }
+
+      vscode.window
+        .showQuickPick(projects, {
+          placeHolder: "Type a project name. E.g: BPF",
+        })
+        .then((project: { label: string; id: string } | undefined) => {
+          if (project) {
+            let newFilter = { ...currentFilter };
+            newFilter.project = project.id;
+            changeFilter(newFilter);
+          }
+        });
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("patchwork.changeSubmitter", () => {
+      const submitters = [{ label: "All submitters", id: "" }];
+      for (const id in personsMap) {
+        submitters.push({ label: personsMap[id], id: id });
+      }
+
+      vscode.window
+        .showQuickPick(submitters, {
+          placeHolder: "Type a submitter name. E.g: Linus",
+        })
+        .then((submitter: { label: string; id: string } | undefined) => {
+          if (submitter) {
+            let newFilter = { ...currentFilter };
+            newFilter.submitter = submitter.id;
+            changeFilter(newFilter);
+          }
+        });
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("patchwork.refreshFilterContent", () => {
+      let project = projectsMap[currentFilter.project];
+      if (!project) {
+        project = "All projects";
+      }
+      let submitter = personsMap[currentFilter.submitter];
+      if (!submitter) {
+        submitter = "All submitters";
+      }
+      filterProvider.setFilter(currentFilter.query, project, submitter);
     })
   );
 

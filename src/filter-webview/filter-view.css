@@ -3,11 +3,10 @@
   margin: 4px;
 }
 
-.filter-input > vscode-dropdown {
-  width: 100%;
+.clickable {
+  cursor: pointer;
 }
 
-/* TODO: use date selectors for these */
-#before-input, #since-input {
-  visibility: hidden;
+.not-clickable {
+  pointer-events: none;
 }

@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import * as vscode from "vscode";
 
-export function gravatarUri(email: string, size: number = 200): vscode.Uri | undefined {
+export function gravatarUri(email: string, size: number = 16): vscode.Uri | undefined {
   // Documented at https://en.gravatar.com/site/implement/images/
   const emailHash = createHash("md5").update(email?.trim()?.toLowerCase()).digest("hex");
   const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?s=${size}&d=retro`;

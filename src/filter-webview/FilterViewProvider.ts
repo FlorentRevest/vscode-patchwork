@@ -1,4 +1,3 @@
-import { Filter } from "../rest-api/Endpoints";
 import { getUri } from "../utilities/getUri";
 import { generateNonce } from "../utilities/getNonce";
 import * as vscode from "vscode";
@@ -8,9 +7,6 @@ export class FilterViewProvider implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly initialFilter: Filter,
-    private readonly projectsMap: Record<string, string>,
-    private readonly personsMap: Record<string, string>
   ) {}
 
   public resolveWebviewView(
@@ -30,30 +26,29 @@ export class FilterViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "getContent": {
-          if (this._view) {
-            this._view.webview.postMessage({ type: "setProjects", projects: this.projectsMap });
-            this._view.webview.postMessage({ type: "setPersons", persons: this.personsMap });
-
-            this.setFilter(this.initialFilter);
-          }
+          vscode.commands.executeCommand("patchwork.refreshFilterContent");
           break;
         }
-        case "changeFilter": {
-          vscode.commands.executeCommand("patchwork.changeFilter", data.value);
+        case "changeSearch": {
+          vscode.commands.executeCommand("patchwork.changeSearch", data.value);
+          break;
+        }
+        case "changeProject": {
+          vscode.commands.executeCommand("patchwork.changeProject");
+          break;
+        }
+        case "changeSubmitter": {
+          vscode.commands.executeCommand("patchwork.changeSubmitter");
           break;
         }
       }
     });
   }
 
-  public setFilter(f?: Filter) {
+  public setFilter(query: string, project: string, submitter: string) {
     if (this._view) {
-      this._view.webview.postMessage({ type: "setFilter", filter: f });
+      this._view.webview.postMessage({ type: "setFilter", query: query, project: project, submitter: submitter });
     }
-  }
-
-  public clearFilter() {
-    this.setFilter();
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
@@ -95,31 +90,24 @@ export class FilterViewProvider implements vscode.WebviewViewProvider {
         <title>Filter</title>
       </head>
       <body id="webview-body">
-        <vscode-text-field class="filter-input" id="query-input" placeholder="Search">
+        <vscode-text-field class="filter-input" id="query-input">
+          Title contains:
           <span slot="start" class="codicon codicon-search"></span>
         </vscode-text-field>
 
-        <div class="filter-input">
-          <div>Project</div>
-          <vscode-dropdown id="project-input">
-            <vscode-option value>All projects</vscode-option>
-          </vscode-dropdown>
+        <div id="project-input-wrapper" class="clickable">
+          <vscode-text-field class="filter-input not-clickable" id="project-input">
+            In project:
+            <span slot="start" class="codicon codicon-organization"></span>
+          </vscode-text-field>
         </div>
 
-        <div class="filter-input">
-          <div>Submitter</div>
-          <vscode-dropdown id="submitter-input">
-            <vscode-option value>All submitters</vscode-option>
-          </vscode-dropdown>
+        <div id="submitter-input-wrapper" class="clickable">
+          <vscode-text-field class="filter-input not-clickable" id="submitter-input">
+            Sent by:
+            <span slot="start" class="codicon codicon-person"></span>
+          </vscode-text-field>
         </div>
-
-        <vscode-text-field class="filter-input" id="before-input" placeholder="Before">
-          <span slot="start" class="codicon codicon-chevron-left"></span>
-        </vscode-text-field>
-
-        <vscode-text-field class="filter-input" id="since-input" placeholder="Since">
-          <span slot="start" class="codicon codicon-chevron-right"></span>
-        </vscode-text-field>
       </body>
       </html>`;
   }
