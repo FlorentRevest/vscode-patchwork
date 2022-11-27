@@ -38,8 +38,8 @@ export const EmailView = ({ email, isReply }: { email: Patch; isReply: boolean }
       </Linkify>
       <a href={email.list_archive_url}>
         <VSCodeButton appearance="secondary" title={email.list_archive_url}>
-          <span className="codicon codicon-link-external" />
-          &nbsp;&nbsp;Open archive
+          <span slot="start" className="codicon codicon-link-external" />
+          Open archive
         </VSCodeButton>
       </a>
     </div>

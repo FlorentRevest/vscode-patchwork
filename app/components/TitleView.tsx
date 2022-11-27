@@ -54,8 +54,7 @@ export const TitleView = ({
       </h2>
 
       <VSCodeButton onClick={apply}>
-        <span className="codicon codicon-cloud-download" />
-        &nbsp;&nbsp;
+        <span slot="start" className="codicon codicon-cloud-download" />
         {contentIsSeries ? "Apply series" : "Apply patch"}
       </VSCodeButton>
     </header>
