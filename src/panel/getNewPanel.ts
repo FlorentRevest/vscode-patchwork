@@ -54,12 +54,19 @@ export function getNewPanel(extensionUri: Uri, payload: Patch | Series, context:
   });
 
   const scriptPath = getUri(panel.webview, extensionUri, ["out", "app", "bundle.js"]);
+  const codiconsUri = getUri(panel.webview, extensionUri, [
+    "node_modules",
+    "@vscode/codicons",
+    "dist",
+    "codicon.css",
+  ]);
   panel.webview.html = /*html*/ `
     <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="${codiconsUri}" rel="stylesheet" />
         <title></title>
       </head>
       <body>
