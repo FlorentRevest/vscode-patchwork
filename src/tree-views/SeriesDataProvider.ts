@@ -1,5 +1,5 @@
 import { forest, ForestInstance } from "4rest";
-import { CommentThreadCollapsibleState, Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
+import { Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { PatchesService, SeriesService, Filter } from "../rest-api/Endpoints";
 import { Patch, Series } from "../rest-api/Types";
 import { gravatarUri } from "../utilities/gravatarUri";
@@ -18,6 +18,7 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
   seriesService: SeriesService;
   currentFilter: Filter;
   currentPage: number;
+  runningQuery?: AbortController;
 
   constructor(currentFilter: Filter, context: vscode.ExtensionContext) {
     this.forestInstance = forest.create({
@@ -44,19 +45,29 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
   }
 
   async refresh(f: Filter): Promise<void> {
+    if (this.runningQuery) {
+      this.runningQuery.abort();
+      this.runningQuery = undefined;
+    }
+
     this.currentFilter = f;
     this.currentPage = 1;
-    this.children = [];
+    this.children = [new SearchingNode()];
     this._onDidChangeTreeData.fire();
 
-    const series = await this.seriesService.getByPage(1, this.currentFilter);
+    this.runningQuery = new AbortController();
+    const series = await this.seriesService.getByPage(1, this.currentFilter, this.runningQuery.signal);
     const seriesData = series.data;
 
-    this.children = await Promise.all(seriesData.map((s: Series) => { return this.nodeForSeries(s); }));
+    if (seriesData.length) {
+      this.children = await Promise.all(seriesData.map((s: Series) => { return this.nodeForSeries(s); }));
 
-    const linkHeader = series.headers["link"];
-    if (linkHeader && linkHeader.indexOf('rel="next"')) {
-      this.children.push(new FetchMoreNode());
+      const linkHeader = series.headers["link"];
+      if (linkHeader && linkHeader.indexOf('rel="next"')) {
+        this.children.push(new FetchMoreNode());
+      }
+    } else {
+      this.children = [new EmptyNode()];
     }
 
     this._onDidChangeTreeData.fire();
@@ -74,12 +85,21 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
   }
 
   async loadMore() {
-    this.currentPage++;
+    if (this.runningQuery) {
+      this.runningQuery.abort();
+      this.runningQuery = undefined;
+    }
 
-    const series = await this.seriesService.getByPage(this.currentPage, this.currentFilter);
+    this.children.pop();
+    this.children.push(new SearchingNode());
+    this._onDidChangeTreeData.fire();
+
+    this.currentPage++;
+    this.runningQuery = new AbortController();
+    const series = await this.seriesService.getByPage(this.currentPage, this.currentFilter, this.runningQuery.signal);
     const seriesData = series.data;
 
-    const newChildren: PossibleNode[] = await Promise.all(seriesData.map(this.nodeForSeries));
+    const newChildren = await Promise.all(seriesData.map((s: Series) => { return this.nodeForSeries(s); }));
     this.children.pop();
     this.children.push(...newChildren);
 
@@ -149,6 +169,24 @@ class FetchMoreNode extends TreeItem {
     };
   }
 
+  async getChildren(): Promise<PatchNode[]> {
+    return [];
+  }
+}
+
+class SearchingNode extends TreeItem {
+  constructor() {
+    super("Searching...");
+  }
+  async getChildren(): Promise<PatchNode[]> {
+    return [];
+  }
+}
+
+class EmptyNode extends TreeItem {
+  constructor() {
+    super("No results found");
+  }
   async getChildren(): Promise<PatchNode[]> {
     return [];
   }

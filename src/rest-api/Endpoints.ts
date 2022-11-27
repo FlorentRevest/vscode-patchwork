@@ -1,4 +1,5 @@
 import { ForestInstance, ForestService } from "4rest";
+import { SignatureHelp } from "vscode";
 import { Patch, Project, Series } from "./Types";
 
 export interface Filter {
@@ -17,9 +18,10 @@ export class SeriesService extends ForestService<Series> {
   constructor(forestInstance: ForestInstance) {
     super("series", forestInstance);
   }
-  public getByPage = (page: number, f: Filter) =>
+  public getByPage = (page: number, f: Filter, s?: AbortSignal) =>
     this.methodsCreator.get<Series>({
       config: {
+        signal: s,
         params: {
           page: page,
           order: "-id",
