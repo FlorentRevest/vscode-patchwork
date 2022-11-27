@@ -41,7 +41,9 @@ export const HunkView = ({ hunk, file }: { hunk: Hunk; file: File }) => {
       scrollbar: { vertical: "hidden" },
     });
 
-    setHeight(Math.max(originalEditor.getContentHeight(), modifiedEditor.getContentHeight()));
+    let newHeight = Math.max(originalEditor.getContentHeight(), modifiedEditor.getContentHeight());
+    newHeight += originalEditor.getLayoutInfo().horizontalScrollbarHeight;
+    setHeight(newHeight);
     editor.layout();
   };
 
@@ -78,7 +80,7 @@ export const HunkView = ({ hunk, file }: { hunk: Hunk; file: File }) => {
     overviewRulerLanes: 0,
     renderOverviewRuler: false,
     enableSplitViewResizing: false,
-    scrollbar: { vertical: "hidden" },
+    scrollbar: { horizontal: "visible", verticalScrollbarSize: 0, alwaysConsumeMouseWheel: false },
   };
 
   return (
