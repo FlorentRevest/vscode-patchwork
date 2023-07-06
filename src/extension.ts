@@ -200,4 +200,15 @@ export async function activate(context: ExtensionContext) {
       changeFilter(emptyFilter);
     })
   );
+
+  context.subscriptions.push(
+    commands.registerCommand("patchwork.open", async (messageId: string, fallback?: vscode.Uri) => {
+      const patch = await seriesDataProvider.patchForMessageId(messageId);
+      if (patch) {
+        commands.executeCommand("patchwork.showPanel", patch);
+      } else if (fallback) {
+        commands.executeCommand("vscode.open", fallback);
+      }
+    })
+  );
 }

@@ -1,6 +1,6 @@
 import { forest, ForestInstance } from "4rest";
 import { Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
-import { PatchesService, SeriesService, Filter } from "../rest-api/Endpoints";
+import { PatchesService, CoverLetterService, SeriesService, Filter } from "../rest-api/Endpoints";
 import { Patch, Series } from "../rest-api/Types";
 import { gravatarUri } from "../utilities/gravatarUri";
 import * as vscode from "vscode";
@@ -42,6 +42,30 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
     } else {
       return new SeriesNode(s, this.forestInstance);
     }
+  }
+
+  async patchForMessageId(messageId: string): Promise<Patch | Series | undefined> {
+    const patchesService = new PatchesService(this.forestInstance);
+    const coverLetterService = new CoverLetterService(this.forestInstance);
+    let [patchReply, coverLetterReply] = await Promise.all(
+      [patchesService.getByMessageId(messageId), coverLetterService.getByMessageId(messageId)]);
+
+    // If a patch is found, enrich it
+    const patches = patchReply.data;
+    if (patches.length) {
+      patchReply = await patchesService.getById(patches[0].id);
+      return patchReply.data;
+    }
+
+    // If a cover letter is found, get to its Series
+    const coverLetters = coverLetterReply.data;
+    if (coverLetters.length) {
+      let seriesReply = await this.seriesService.getById(coverLetters[0].series[0].id);
+      return seriesReply.data;
+    }
+
+    // And if nothing is found, bail out
+    return undefined;
   }
 
   async refresh(f: Filter): Promise<void> {

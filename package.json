@@ -17,7 +17,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:patchwork.series"
+    "onView:patchwork.series",
+    "onCommand:patchwork.open"
   ],
   "main": "./out/src/extension.js",
   "contributes": {

@@ -1,6 +1,5 @@
 import { ForestInstance, ForestService } from "4rest";
-import { SignatureHelp } from "vscode";
-import { Patch, Project, Series } from "./Types";
+import { Patch, PatchSummary, Series } from "./Types";
 
 export interface Filter {
   query: string;
@@ -39,4 +38,28 @@ export class PatchesService extends ForestService<Patch> {
   constructor(forestInstance: ForestInstance) {
     super("patches", forestInstance);
   }
+  public getByMessageId = (messageId: string, s?: AbortSignal) =>
+    this.methodsCreator.get<PatchSummary[]>({
+      config: {
+        signal: s,
+        params: {
+          msgid: stringValueOrUndefined(messageId),
+        },
+      },
+    })();
+}
+
+export class CoverLetterService extends ForestService<Patch> {
+  constructor(forestInstance: ForestInstance) {
+    super("covers", forestInstance);
+  }
+  public getByMessageId = (messageId: string, s?: AbortSignal) =>
+    this.methodsCreator.get<PatchSummary[]>({
+      config: {
+        signal: s,
+        params: {
+          msgid: stringValueOrUndefined(messageId),
+        },
+      },
+    })();
 }
