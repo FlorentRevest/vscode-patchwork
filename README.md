@@ -8,3 +8,4 @@ This extension integrates VSCode with [Patchwork](http://jk.ozlabs.org/projects/
 * Viewing patches with two panes diffs
 * Applying series or patches locally
 * Reading mail replies
+* Replying to emails directly from the IDE (using git send-email)

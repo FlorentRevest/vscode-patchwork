@@ -42,6 +42,12 @@ export const EmailView = ({ email, isReply }: { email: Patch; isReply: boolean }
           Open archive
         </VSCodeButton>
       </a>
+      &nbsp;
+      <VSCodeButton appearance="secondary" title="Reply"
+        onClick={() => { vscode.postMessage({ command: "reply", email: email }); }}>
+        <span slot="start" className="codicon codicon-reply" />
+        Reply
+      </VSCodeButton>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { commands, Uri, ViewColumn, WebviewPanel, Webview, window } from "vscode
 import { Patch, Series } from "../rest-api/Types";
 import { getUri } from "../utilities/getUri";
 import { userAgent } from "../utilities/userAgent";
+import { generateReplyTo } from "../utilities/emailReply";
 import axios from "axios";
 import * as vscode from "vscode";
 
@@ -49,6 +50,9 @@ export function getNewPanel(extensionUri: Uri, payload: Patch | Series, context:
           "vscode.open",
           Uri.parse(workspaceFolders[0].uri.toString() + "/" + message.path)
         );
+        break;
+      case "reply":
+        commands.executeCommand("vscode.open", generateReplyTo(message.email));
         break;
     }
   });
