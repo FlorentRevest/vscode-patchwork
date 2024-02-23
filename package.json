@@ -114,6 +114,16 @@
           "group": "inline"
         }
       ]
+    },
+    "configuration": {
+      "title": "Patchwork",
+      "properties": {
+        "patchwork.baseUrl": {
+          "type": "string",
+          "default": "https://patchwork.kernel.org",
+          "description": "The full base URL (protocol included) for your desired Patchwork instance."
+        }
+      }
     }
   },
   "scripts": {

@@ -3,6 +3,7 @@ import { Event, EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleSta
 import { PatchesService, CoverLetterService, SeriesService, Filter } from "../rest-api/Endpoints";
 import { Patch, Series } from "../rest-api/Types";
 import { gravatarUri } from "../utilities/gravatarUri";
+import { makeURL } from "../utilities/config";
 import * as vscode from "vscode";
 import { userAgent } from "../utilities/userAgent";
 
@@ -23,7 +24,7 @@ export class SeriesDataProvider implements TreeDataProvider<PossibleNode> {
   constructor(currentFilter: Filter, context: vscode.ExtensionContext) {
     this.forestInstance = forest.create({
       axiosSettings: {
-        baseURL: "https://patchwork.kernel.org/api/",
+        baseURL: makeURL("/api/"),
         headers: { 'User-Agent': userAgent(context) },
       },
     });
