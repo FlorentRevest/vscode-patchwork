@@ -8,6 +8,7 @@ import { gitAm } from "./utilities/gitAm";
 import * as vscode from "vscode";
 import { fetchAPIHTMLPage, getPersons, getProjects } from "./utilities/fetchAPIHTMLPage";
 import { SavedFiltersDataProvider } from "./tree-views/SavedFiltersDataProvider";
+import { onConfigurationUpdate } from "./utilities/config";
 
 export async function activate(context: ExtensionContext) {
   // Retrieve the list of projects and persons from cache if available
@@ -211,4 +212,6 @@ export async function activate(context: ExtensionContext) {
       }
     })
   );
+
+  context.subscriptions.push(onConfigurationUpdate);
 }
