@@ -91,6 +91,9 @@ export async function activate(context: ExtensionContext) {
         });
       }
       panel.title = payload.name;
+
+      // Ensure the panel/tab is focused when a series/patch is selected
+      panel.reveal(panel.viewColumn ?? ViewColumn.Active, false);
     })
   );
 
